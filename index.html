@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open-Source Project Dashboard</title>
+  <link rel="stylesheet" href="/src/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <!-- Fixed background graphic -->
+  <div class="bg-grid"></div>
+
+  <!-- Main Dashboard Layout -->
+  <div class="dashboard">
+
+    <!-- Top Bar -->
+    <header class="top-bar glass-panel">
+      <div class="logo">
+        <span class="neon-text">SYS.</span>CORE
+      </div>
+      <div class="actions">
+        <select id="domain-filter" class="cyber-select">
+          <option value="all">Tous les domaines</option>
+        </select>
+        <button id="add-node-btn" class="cyber-button">Ajouter un nœud</button>
+      </div>
+    </header>
+
+    <div class="dashboard-body">
+      <!-- Center: Graph Area (Full Screen) -->
+      <main class="center-stage">
+        <div id="cy"></div>
+
+        <!-- Node Details Panel -->
+        <div id="details-panel" class="details-panel glass-panel hidden">
+          <div class="details-header">
+            <h3 id="detail-name">Nom de la feature</h3>
+            <button id="close-details" class="close-btn">&times;</button>
+          </div>
+          <p id="detail-desc" class="desc">Description...</p>
+          <div class="detail-meta">
+            <span class="domain-badge" id="detail-domain">Domaine</span>
+          </div>
+          <div class="contributors-list" id="detail-contributors">
+            <!-- Contributors injected here -->
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- First Visit Modal -->
+  <div id="welcome-modal" class="modal-overlay hidden">
+    <div class="modal-content glass-panel">
+      <h2>Bienvenue sur le Projet</h2>
+      <p>Ce graphe interactif représente toutes les contributions à notre projet open-source universitaire.</p>
+      <ul>
+        <li>Chaque nœud est une fonctionnalité ou un composant.</li>
+        <li>Survolez les nœuds pour voir les connexions.</li>
+        <li>Cliquez pour afficher les détails et les contributeurs.</li>
+      </ul>
+      <p>Vous voulez participer ? Cliquez sur le bouton "Ajouter un nœud" en haut !</p>
+      <button id="start-btn" class="cyber-button primary">Commencer l'exploration</button>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
