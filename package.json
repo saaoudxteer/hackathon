@@ -1,0 +1,25 @@
+{
+  "name": "hackathon-amu-graph-view",
+  "version": "1.0.0",
+  "description": "A futuristic, interactive web dashboard built to visualize contributions to a shared university open-source project.",
+  "main": "vite.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Slaytt/hackathon-AMU-graph-view.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Slaytt/hackathon-AMU-graph-view/issues"
+  },
+  "homepage": "https://github.com/Slaytt/hackathon-AMU-graph-view#readme",
+  "dependencies": {
+    "cytoscape": "^3.33.1",
+    "vite": "^7.3.1"
+  }
+}
