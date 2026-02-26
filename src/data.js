@@ -40,7 +40,7 @@ function formatDataForGraph(repoContents) {
         author: REPO_OWNER,
         color: '#ffffff',
         val: 25,
-        img: '/logo-rond-amu.png',
+        img: 'logo-rond-amu.png',
         contributors: []
     });
 
@@ -56,7 +56,7 @@ function formatDataForGraph(repoContents) {
     };
 
     repoContents.forEach((item, index) => {
-        const nodeId = `node_${index}`;
+        const nodeId = item.id || `node_${index}`;
         const nodeAuthor = item.author || 'github';
 
         const nodeColor = item.color || getRandomPastelColor();
@@ -64,16 +64,26 @@ function formatDataForGraph(repoContents) {
         nodes.push({
             id: nodeId,
             name: item.name,
-            description: item.description || `Projet ajouté par ${nodeAuthor}`,
+            description: item.short_description || item.description || `Projet ajouté par ${nodeAuthor}`,
             field: getField(item),
             author: nodeAuthor,
             img: `https://github.com/${nodeAuthor.replace(/\s+/g, '')}.png`,
-            color: nodeColor, // On attache la couleur au nœud
+            color: nodeColor,
             val: 8,
-            contributors: [{ name: nodeAuthor, avatar_url: `https://github.com/${nodeAuthor.replace(/\s+/g, '')}.png` }]
+            contributors: [{
+                name: nodeAuthor,
+                avatar_url: `https://github.com/${nodeAuthor.replace(/\\s+/g, '')}.png`,
+                profile_url: `https://github.com/${nodeAuthor.replace(/\\s+/g, '')}`
+            }]
         });
 
-        links.push({ source: nodeId, target: 'core' });
+        if (item.dependencies && item.dependencies.length > 0) {
+            item.dependencies.forEach(depId => {
+                links.push({ source: nodeId, target: depId });
+            });
+        } else {
+            links.push({ source: nodeId, target: 'core' });
+        }
     });
 
     const recentNodes = nodes.filter(n => n.id !== 'core').slice(-3);
