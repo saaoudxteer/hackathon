@@ -117,5 +117,22 @@ function bindStaticEvents() {
         const repoUrl = 'https://github.com/Slaytt/Hackathon-2026.git';
         window.open(repoUrl, "_blank", "noopener,noreferrer");
     });
+
+    document.getElementById('close-details').addEventListener('click', () => {
+        document.getElementById('focus-card').classList.add('hidden');
+    });
+
+    document.getElementById('add-node-btn').addEventListener('click', () => {
+        const repoUrl = 'https://github.com/Slaytt/Hackathon-2026.git';
+        window.open(repoUrl, "_blank", "noopener,noreferrer");
+    });
+
+    document.getElementById('info-bubble').addEventListener('click', () => {
+        const panel = document.getElementById('info-panel');
+        panel.classList.toggle('hidden');
+    });
+    document.getElementById('close-info').addEventListener('click', () => {
+        document.getElementById('info-panel').classList.add('hidden');
+    });
 }
 

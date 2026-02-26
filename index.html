@@ -9,17 +9,40 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 
+
+
 <body>
+
+  <button id="info-bubble" class="info-bubble glass">?</button>
+
+  <div id="info-panel" class="info-panel glass hidden">
+    <div class="panel-header">
+      <h2>À propos de l'Œuvre</h2>
+      <button id="close-info" class="close-icon">&times;</button>
+    </div>
+    <div class="panel-content">
+      <p>Bienvenue sur la constellation de l'AMU Hackathon. Chaque point lumineux de ce réseau représente la
+        contribution d'un étudiant ou d'une équipe.</p>
+
+      <h3>Comment participer ?</h3>
+      <ul>
+        <li>Ajoutez votre projet dans le fichier <code>registry.json</code> du dépôt principal.</li>
+        <li>Choisissez votre propre couleur via le champ <code>"color": "#HEX"</code>.</li>
+        <li>Laissez une trace dans le Livre d'Or avec le champ <code>"message"</code>.</li>
+      </ul>
+      <p><em>Le graphe se mettra à jour automatiquement !</em></p>
+    </div>
+  </div>
 
   <div id="cy"></div>
 
   <header class="floating-header glass">
-    <div class="logo">AMU <span class="logo-dim">Network</span></div>
+    <div class="logo">AstrAMU <span class="logo-dim"></span></div>
     <div class="controls">
       <select id="domain-filter" class="clean-select">
         <option value="all">Tous les projets</option>
       </select>
-      <button id="add-node-btn" class="clean-button">Ajouter ma pierre</button>
+      <button id="add-node-btn" class="clean-button">Ajouter un projet</button>
     </div>
   </header>
 

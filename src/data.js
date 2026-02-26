@@ -14,17 +14,33 @@ export async function fetchFeatures() {
     }
 }
 
+// Petit générateur de couleurs néon aléatoires pour ceux qui oublient de choisir
+function getRandomPastelColor() {
+    const pastels = [
+        '#ffb3ba', // Rose pastel
+        '#ffdfba', // Pêche / Orange doux
+        '#ffffba', // Jaune pastel
+        '#baffc9', // Menthe / Vert doux
+        '#bae1ff', // Bleu ciel pastel
+        '#e8baff'  // Lilas / Violet doux
+    ];
+    return pastels[Math.floor(Math.random() * pastels.length)];
+}
+
 function formatDataForGraph(repoContents) {
     const nodes = [];
     const links = [];
 
-    // Nœud central (Core) plus gros
+    // Nœud central (Core)
     nodes.push({
         id: 'core',
         name: REPO_NAME,
         description: `Dépôt principal : ${REPO_OWNER}/${REPO_NAME}`,
         field: 'Repository',
-        val: 25, // Taille du nœud pour ForceGraph
+        author: REPO_OWNER,
+        color: '#ffffff',
+        val: 25,
+        img: '/logo-rond-amu.png',
         contributors: []
     });
 
@@ -41,20 +57,27 @@ function formatDataForGraph(repoContents) {
 
     repoContents.forEach((item, index) => {
         const nodeId = `node_${index}`;
+        const nodeAuthor = item.author || 'github';
 
-        // Ajout du nœud
+        const nodeColor = item.color || getRandomPastelColor();
+
         nodes.push({
             id: nodeId,
             name: item.name,
-            description: `Type: ${item.type} | Taille: ${item.size} octets\nLien: ${item.html_url}`,
+            description: item.description || `Projet ajouté par ${nodeAuthor}`,
             field: getField(item),
-            val: 8, // Taille normale
-            contributors: [{ name: "GitHub System", avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" }]
+            author: nodeAuthor,
+            img: `https://github.com/${nodeAuthor.replace(/\s+/g, '')}.png`,
+            color: nodeColor, // On attache la couleur au nœud
+            val: 8,
+            contributors: [{ name: nodeAuthor, avatar_url: `https://github.com/${nodeAuthor.replace(/\s+/g, '')}.png` }]
         });
 
-        // Ajout du lien vers le centre
         links.push({ source: nodeId, target: 'core' });
     });
+
+    const recentNodes = nodes.filter(n => n.id !== 'core').slice(-3);
+    recentNodes.forEach(n => n.isNew = true);
 
     return { nodes, links };
 }

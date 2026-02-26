@@ -28,7 +28,6 @@ async function bootstrap() {
             filterGraph(e.target.value);
         });
 
-        showToast("Synchronisation réussie.");
 
     } catch (err) {
         console.error("Erreur critique:", err);
