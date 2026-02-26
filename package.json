@@ -4,6 +4,9 @@
   "description": "A futuristic, interactive web dashboard built to visualize contributions to a shared university open-source project.",
   "main": "vite.config.js",
   "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,7 +22,7 @@
   },
   "homepage": "https://github.com/Slaytt/hackathon-AMU-graph-view#readme",
   "dependencies": {
-    "cytoscape": "^3.33.1",
+    "force-graph": "^1.51.1",
     "vite": "^7.3.1"
   }
 }

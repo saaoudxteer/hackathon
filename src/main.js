@@ -1,32 +1,16 @@
-/**
- * Point d'entrée principal de l'application Dashboard.
- * Initialise les données, l'interface graphique et le graphe interactif.
- * @module src/main
- */
-
 import { fetchFeatures } from './data.js';
 import { initGraph, filterGraph } from './graph.js';
-import {
-    initUI,
-    showToast,
-    displayNodeDetails
-} from './ui.js';
+import { initUI, showToast, displayNodeDetails } from './ui.js';
 
-/**
- * Fonction d'amorçage responsable de l'initialisation complète de l'application.
- * Elle charge les données, configure l'UI et instancie Cytoscape.
- * @async
- * @function bootstrap
- */
 async function bootstrap() {
     try {
-        // 1. Fetch data
-        const elements = await fetchFeatures(); // elements containing 'core' and repo files
+        // 1. Fetch data (qui renvoie maintenant { nodes, links })
+        const graphData = await fetchFeatures();
 
-        // Convert Cytoscape elements back to a simple feature list for UI stats
-        const features = elements.filter(e => e.data.id !== 'core' && !e.data.source).map(e => e.data);
+        // On extrait juste les nœuds (sans le core) pour générer les filtres de l'UI
+        const features = graphData.nodes.filter(n => n.id !== 'core');
 
-        // 2. Init UI Stats
+        // 2. Init UI
         initUI(features);
 
         // 3. Init Graph
@@ -34,15 +18,9 @@ async function bootstrap() {
 
         initGraph(
             container,
-            elements,
-            // onClick
-            (nodeData) => {
-                displayNodeDetails(nodeData);
-            },
-            // onHover
-            (nodeData, isHovering) => {
-                // Can optionally show simple tooltip, but right now styling handles glow
-            }
+            graphData, // On passe tout l'objet graphData ici
+            (nodeData) => displayNodeDetails(nodeData),
+            (nodeData, isHovering) => { }
         );
 
         // 4. Bind Filter

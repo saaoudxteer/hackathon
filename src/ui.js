@@ -73,7 +73,7 @@ export function showToast(message) {
  * @param {Object|null} nodeData - Les données du nœud sélectionné (null pour masquer).
  */
 export function displayNodeDetails(nodeData) {
-    const panel = document.getElementById('details-panel');
+    const panel = document.getElementById('focus-card'); // Ancien 'details-panel'
     if (!nodeData) {
         panel.classList.add('hidden');
         return;
@@ -84,7 +84,7 @@ export function displayNodeDetails(nodeData) {
     document.getElementById('detail-domain').textContent = nodeData.field || "Inconnu";
 
     const list = document.getElementById('detail-contributors');
-    list.innerHTML = ""; // clear
+    list.innerHTML = "";
 
     if (nodeData.contributors && nodeData.contributors.length > 0) {
         nodeData.contributors.forEach(c => {
@@ -92,11 +92,9 @@ export function displayNodeDetails(nodeData) {
             a.className = 'contributor';
             a.href = c.profile_url || "#";
             a.target = "_blank";
-            a.rel = "noopener noreferrer";
 
             const img = document.createElement('img');
             img.src = c.avatar_url;
-            img.alt = `Avatar de ${c.name}`;
 
             const span = document.createElement('span');
             span.textContent = c.name;
@@ -105,20 +103,14 @@ export function displayNodeDetails(nodeData) {
             a.appendChild(span);
             list.appendChild(a);
         });
-    } else {
-        list.innerHTML = "<span class='contributor'>Anonyme</span>";
     }
 
     panel.classList.remove('hidden');
 }
 
-/**
- * Associe les écouteurs d'événements aux éléments statiques du DOM.
- * @function bindStaticEvents
- */
 function bindStaticEvents() {
     document.getElementById('close-details').addEventListener('click', () => {
-        document.getElementById('details-panel').classList.add('hidden');
+        document.getElementById('focus-card').classList.add('hidden');
     });
 
     document.getElementById('add-node-btn').addEventListener('click', () => {
