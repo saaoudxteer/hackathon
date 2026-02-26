@@ -31,13 +31,28 @@ export function initGraph(container, graphData, onNodeClick, onNodeHover) {
         .nodeId('id')
         .nodeLabel(node => '') // Désactive le tooltip textuel par défaut
 
+        .nodePointerAreaPaint((node, color, ctx) => {
+            let size = 12; // Base légèrement plus grande
+            if (node.id === 'core') {
+                size = 45; // Max central réduit
+            } else if (node.loc > 0) {
+                // Racine carrée avec un diviseur plus élevé pour lisser l'échelle (delta moins violent)
+                size = Math.min(12 + Math.sqrt(node.loc) / 4, 35);
+            }
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
+            ctx.fill();
+        })
+
         .nodeCanvasObject((node, ctx, globalScale) => {
 
-            let size = 8; // Taille de base
+            let size = 12; // Base légèrement plus grande
             if (node.id === 'core') {
-                size = 20;
+                size = 45; // Max central réduit
             } else if (node.loc > 0) {
-                size = Math.min(8 + (node.loc / 50), 25);
+                // Racine carrée avec un diviseur plus élevé pour lisser l'échelle (delta moins violent)
+                size = Math.min(12 + Math.sqrt(node.loc) / 4, 35);
             }
 
             if (!node.imgObj && node.img) {
@@ -65,10 +80,6 @@ export function initGraph(container, graphData, onNodeClick, onNodeHover) {
             }
 
             ctx.restore();
-
-
-
-
 
 
             if (node.isNew) {
@@ -134,23 +145,23 @@ export function initGraph(container, graphData, onNodeClick, onNodeHover) {
             graph.linkWidth(graph.linkWidth()).linkDirectionalParticles(graph.linkDirectionalParticles());
         })
         .onNodeClick(node => {
-            // Mouvement de caméra hyper fluide vers le nœud cliqué
+            // Mouvement de caméra vers le nœud cliqué
             graph.centerAt(node.x, node.y, 1000);
-            graph.zoom(3, 1500); // Zoom x3 en 1.5 seconde
+            graph.zoom(3, 1500); // Zoom x3
             onNodeClick(node);
         })
         .onBackgroundClick(() => {
             onNodeClick(null);
-            graph.zoomToFit(1000); // Retour à la vue globale
+            graph.zoomToFit(1000);
         });
 
     // --- LA PHYSIQUE VIVANTE ---
-    // Répulsion forte pour bien écarter les avatars
-    graph.d3Force('charge').strength(-300);
-    // Éloigne les nœuds du centre pour que l'étoile respire
-    graph.d3Force('link').distance(100);
+    // Répulsion forte pour bien écarter les avatars (augmentée car les nœuds sont plus gros)
+    graph.d3Force('charge').strength(-550);
+    // Éloigne les nœuds du centre pour que l'étoile respire (augmentée pour la clarté)
+    graph.d3Force('link').distance(180);
     // Force douce vers le centre pour éviter que le graphe n'explose à l'infini
-    graph.d3Force('center').strength(0.05);
+    graph.d3Force('center').strength(0.04);
 
     window.addEventListener('resize', () => {
         graph.width(container.clientWidth);

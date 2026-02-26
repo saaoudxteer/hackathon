@@ -49,11 +49,12 @@ function getRandomPastelColor() {
     return pastels[Math.floor(Math.random() * pastels.length)];
 }
 
-function formatDataForGraph(repoContents) {
+
+function formatDataForGraph(repoContents, linesOfCodeData) {
     const nodes = [];
     const links = [];
 
-    // Nœud central (Core)
+    // Noeud central (Core)
     nodes.push({
         id: 'core',
         name: REPO_NAME,
@@ -63,6 +64,7 @@ function formatDataForGraph(repoContents) {
         color: '#ffffff',
         val: 25,
         img: 'logo-rond-amu.png',
+        loc: 0,
         contributors: []
     });
 
@@ -80,8 +82,9 @@ function formatDataForGraph(repoContents) {
     repoContents.forEach((item, index) => {
         const nodeId = item.id || `node_${index}`;
         const nodeAuthor = item.author || 'github';
-
         const nodeColor = item.color || getRandomPastelColor();
+
+        const authorLoc = (linesOfCodeData && linesOfCodeData[nodeAuthor.toLowerCase()]) ? linesOfCodeData[nodeAuthor.toLowerCase()] : 0;
 
         nodes.push({
             id: nodeId,
@@ -91,11 +94,12 @@ function formatDataForGraph(repoContents) {
             author: nodeAuthor,
             img: `https://github.com/${nodeAuthor.replace(/\s+/g, '')}.png`,
             color: nodeColor,
+            loc: authorLoc,
             val: 8,
             contributors: [{
                 name: nodeAuthor,
-                avatar_url: `https://github.com/${nodeAuthor.replace(/\\s+/g, '')}.png`,
-                profile_url: `https://github.com/${nodeAuthor.replace(/\\s+/g, '')}`
+                avatar_url: `https://github.com/${nodeAuthor.replace(/\s+/g, '')}.png`,
+                profile_url: `https://github.com/${nodeAuthor.replace(/\s+/g, '')}`
             }]
         });
 
