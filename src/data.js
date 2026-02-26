@@ -2,12 +2,34 @@ const REPO_OWNER = 'Slaytt';
 const REPO_NAME = 'Hackathon-2026';
 const REGISTRY_URL = 'https://raw.githubusercontent.com/Slaytt/Hackathon-2026/main/public/registry.json';
 
+const STATS_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/stats/contributors`;
+
 export async function fetchFeatures() {
     try {
+        // 1. On récupère le JSON des étudiants
         const response = await fetch(REGISTRY_URL);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        return formatDataForGraph(data);
+        if (!response.ok) throw new Error("Erreur JSON");
+        const registryData = await response.json();
+
+        // 2. On récupère les stats de lignes de code
+        let linesOfCodeData = {};
+        try {
+            const statsResponse = await fetch(STATS_URL);
+            // GitHub peut renvoyer 202 si les stats sont en cours de calcul
+            if (statsResponse.status === 200) {
+                const statsData = await statsResponse.json();
+                statsData.forEach(stat => {
+                    if (stat.author && stat.author.login) {
+                        const totalAdditions = stat.weeks.reduce((sum, week) => sum + week.a, 0);
+                        linesOfCodeData[stat.author.login.toLowerCase()] = totalAdditions;
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn("Impossible de récupérer les stats Github, tailles par défaut appliquées.");
+        }
+
+        return formatDataForGraph(registryData, linesOfCodeData);
     } catch (error) {
         console.error("Erreur API GitHub :", error);
         throw error;
@@ -17,12 +39,12 @@ export async function fetchFeatures() {
 // Petit générateur de couleurs néon aléatoires pour ceux qui oublient de choisir
 function getRandomPastelColor() {
     const pastels = [
-        '#ffb3ba', // Rose pastel
-        '#ffdfba', // Pêche / Orange doux
-        '#ffffba', // Jaune pastel
-        '#baffc9', // Menthe / Vert doux
-        '#bae1ff', // Bleu ciel pastel
-        '#e8baff'  // Lilas / Violet doux
+        '#ffb3ba',
+        '#ffdfba',
+        '#ffffba',
+        '#baffc9',
+        '#bae1ff',
+        '#e8baff'
     ];
     return pastels[Math.floor(Math.random() * pastels.length)];
 }

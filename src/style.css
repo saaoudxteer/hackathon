@@ -50,10 +50,10 @@ html {
   justify-content: space-between;
   align-items: center;
   padding: 12px 24px;
-  border-radius: 100px;
-  /* Forme de pilule très moderne */
-  width: 90%;
-  max-width: 800px;
+  border-radius: 12px;
+  /* Forme rectangulaire à bords arrondis */
+  width: 95%;
+  max-width: 900px;
 }
 
 .logo {

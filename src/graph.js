@@ -29,9 +29,16 @@ export function initGraph(container, graphData, onNodeClick, onNodeHover) {
     graph = ForceGraph()(container)
         .graphData(graphData)
         .nodeId('id')
+        .nodeLabel(node => '') // Désactive le tooltip textuel par défaut
 
         .nodeCanvasObject((node, ctx, globalScale) => {
-            const size = node.id === 'core' ? 16 : 8;
+
+            let size = 8; // Taille de base
+            if (node.id === 'core') {
+                size = 20;
+            } else if (node.loc > 0) {
+                size = Math.min(8 + (node.loc / 50), 25);
+            }
 
             if (!node.imgObj && node.img) {
                 node.imgObj = new Image();
@@ -58,6 +65,11 @@ export function initGraph(container, graphData, onNodeClick, onNodeHover) {
             }
 
             ctx.restore();
+
+
+
+
+
 
             if (node.isNew) {
                 const time = performance.now();

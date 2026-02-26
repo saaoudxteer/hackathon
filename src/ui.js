@@ -82,6 +82,7 @@ export function displayNodeDetails(nodeData) {
     document.getElementById('detail-name').textContent = nodeData.name;
     document.getElementById('detail-desc').textContent = nodeData.description || "Aucune description.";
     document.getElementById('detail-domain').textContent = nodeData.field || "Inconnu";
+    document.getElementById('detail-loc').textContent = nodeData.loc || 0;
 
     const list = document.getElementById('detail-contributors');
     list.innerHTML = "";
