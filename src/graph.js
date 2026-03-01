@@ -1,200 +1,190 @@
 /**
- * Module de gestion et de rendu du grapheCytoscape.
+ * Module de gestion et de rendu du graphe avec Force-Graph.
  * @module src/graph
  */
 
-import cytoscape from 'cytoscape';
+import ForceGraph from 'force-graph';
 
-let cy;
+let graph;
 
-/**
- * Génère une couleur hexadécimale constante à partir d'une chaîne de caractères (domaine/champ).
- * @function getColor
- * @param {string} field - Le nom du domaine.
- * @returns {string} Une couleur au format hexadécimal.
- */
-function getColor(field) {
-    // Obsidian-like soft palette
-    const colors = [
-        '#8b9eb7', // soft blue/gray
-        '#a882ff', // soft purple
-        '#4db8ff', // soft teal
-        '#ff8f8f', // soft red
-        '#ffb84d', // soft orange
-    ];
-    let hash = 0;
-    for (let i = 0; i < field.length; i++) {
-        hash = field.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
-}
+// Couleurs de secours pour les bordures selon le domaine
+const COLORS = {
+    'Repository': '#ffffff',
+    'Dossier': '#a882ff',
+    'JavaScript': '#ffb84d',
+    'Frontend': '#4db8ff',
+    'Configuration': '#ff8f8f',
+    'Documentation': '#8b9eb7',
+    'Fichier racine': '#a0a0a0'
+};
 
 /**
- * Initialise le graphe Cytoscape dans le conteneur spécifié.
- * @function initGraph
- * @param {HTMLElement} container - L'élément DOM conteneur du graphe.
- * @param {Array<Object>} elements - Les données des nœuds et arêtes.
- * @param {Function} onNodeClick - Callback appelé lors du clic sur un nœud.
- * @param {Function} onNodeHover - Callback appelé lors du survol d'un nœud.
- * @returns {Object} L'instance Cytoscape générée.
+ * Initialise le graphe interactif dans le conteneur spécifié.
  */
-export function initGraph(container, elements, onNodeClick, onNodeHover) {
-    cy = cytoscape({
-        container: container,
-        elements: elements,
-        style: [
-            {
-                selector: 'node',
-                style: {
-                    'width': 12,
-                    'height': 12,
-                    'content': 'data(name)',
-                    'color': '#a0a0a0',
-                    'font-family': 'Rajdhani',
-                    'font-size': '12px',
-                    'text-valign': 'bottom',
-                    'text-margin-y': 5,
-                    'text-outline-color': '#050b14', // Match background to make text readable over edges
-                    'text-outline-width': 2,
-                    'background-color': function (ele) {
-                        return ele.id() === 'core' ? '#ffffff' : getColor(ele.data('field'));
-                    },
-                    'border-width': 0,
-                    'transition-property': 'background-color, color, width, height',
-                    'transition-duration': '0.2s'
-                }
-            },
-            {
-                selector: 'node:selected',
-                style: {
-                    'border-width': 4,
-                    'border-color': '#fff'
-                }
-            },
-            {
-                selector: 'edge',
-                style: {
-                    'width': 1.5,
-                    'line-color': '#4d4d4d',
-                    'curve-style': 'straight',
-                    'target-arrow-shape': 'none',
-                    'transition-property': 'line-color, opacity',
-                    'transition-duration': '0.2s',
-                    'opacity': 0.6
-                }
-            },
-            {
-                selector: '.dimmed',
-                style: {
-                    'opacity': 0.1
-                }
-            },
-            {
-                selector: '.highlighted-node',
-                style: {
-                    'color': '#ffffff', // bright text
-                    'text-outline-color': '#000000'
-                }
-            },
-            {
-                selector: '.highlighted-edge',
-                style: {
-                    'line-color': '#ffffff',
-                    'opacity': 1,
-                    'width': 2
-                }
+export function initGraph(container, graphData, onNodeClick, onNodeHover) {
+    let hoverNode = null;
+    let highlightNodes = new Set();
+    let highlightLinks = new Set();
+
+    graph = ForceGraph()(container)
+        .graphData(graphData)
+        .nodeId('id')
+        .nodeLabel(node => '') // Désactive le tooltip textuel par défaut
+
+        .nodePointerAreaPaint((node, color, ctx) => {
+            let size = 12; // Base légèrement plus grande
+            if (node.id === 'core') {
+                size = 45; // Max central réduit
+            } else if (node.loc > 0) {
+                // Racine carrée avec un diviseur plus élevé pour lisser l'échelle (delta moins violent)
+                size = Math.min(12 + Math.sqrt(node.loc) / 4, 35);
             }
-        ],
-        layout: {
-            name: 'cose', // Built-in physics layout
-            idealEdgeLength: 100,
-            nodeOverlap: 20,
-            refresh: 20,
-            fit: true,
-            padding: 30,
-            randomize: true,
-            componentSpacing: 100,
-            nodeRepulsion: 400000,
-            edgeElasticity: 100,
-            nestingFactor: 5,
-            gravity: 80,
-            numIter: 1000,
-            initialTemp: 200,
-            coolingFactor: 0.95,
-            minTemp: 1.0
-        },
-        userZoomingEnabled: true,
-        userPanningEnabled: true,
-        boxSelectionEnabled: false
-    });
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
+            ctx.fill();
+        })
 
-    // Ensure "core" node is larger but still minimalist
-    cy.nodes('#core').style({
-        'width': 18,
-        'height': 18,
-        'font-size': '14px',
-        'color': '#ffffff'
-    });
+        .nodeCanvasObject((node, ctx, globalScale) => {
 
-    // Pas d'animation dynamique (bobbing) : le réseau reste statique,
-    // seul l'effet de layout initial 'cose' place les nœuds.
+            let size = 12;
+            if (node.id === 'core') {
+                size = 45;
+            } else if (node.loc > 0) {
+                size = Math.min(12 + Math.sqrt(node.loc) / 4, 35);
+            }
 
-    // Events
-    cy.on('tap', 'node', function (evt) {
-        const node = evt.target;
-        cy.nodes().removeClass('selected');
-        node.addClass('selected');
-        onNodeClick(node.data());
-    });
+            if (!node.imgObj && node.img) {
+                node.imgObj = new Image();
+                node.imgObj.src = node.img;
+            }
 
-    cy.on('mouseover', 'node', function (evt) {
-        const node = evt.target;
-        const neighborhood = node.closedNeighborhood();
+            // 2. On sauvegarde l'état du pinceau et on crée un masque circulaire
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
+            ctx.clip(); // Coupe tout ce qui dépasse du rond !
 
-        // Dim everything else
-        cy.elements().not(neighborhood).addClass('dimmed');
+            // 3. Dessin de l'image de profil (ou fond gris si erreur/chargement)
+            try {
+                if (node.imgObj && node.imgObj.complete) {
+                    ctx.drawImage(node.imgObj, node.x - size, node.y - size, size * 2, size * 2);
+                } else {
+                    ctx.fillStyle = '#333';
+                    ctx.fill();
+                }
+            } catch (e) {
+                ctx.fillStyle = '#333';
+                ctx.fill();
+            }
 
-        // Highlight local cluster
-        node.addClass('highlighted-node');
-        neighborhood.nodes().addClass('highlighted-node');
-        neighborhood.edges().addClass('highlighted-edge');
+            ctx.restore();
 
-        onNodeHover(node.data(), true);
-    });
 
-    cy.on('mouseout', 'node', function (evt) {
-        const node = evt.target;
-        cy.elements().removeClass('dimmed highlighted-node highlighted-edge');
-        onNodeHover(node.data(), false);
-    });
+            if (node.isNew) {
+                const time = performance.now();
+                const pulseRadius = size + 2 + Math.abs(Math.sin(time / 400)) * 8;
+                const pulseOpacity = 0.5 - Math.abs(Math.sin(time / 400)) * 0.4;
 
-    // Reset click if background tapped
-    cy.on('tap', function (evt) {
-        if (evt.target === cy) {
-            cy.nodes().removeClass('selected');
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, pulseRadius, 0, Math.PI * 2);
+                ctx.fillStyle = node.color;
+                ctx.globalAlpha = pulseOpacity;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
+            ctx.lineWidth = highlightNodes.has(node) ? 3 : 1.5;
+            ctx.strokeStyle = highlightNodes.has(node) ? '#ffffff' : node.color;
+            ctx.stroke();
+
+            if (globalScale > 2 || highlightNodes.has(node)) {
+                const label = node.name;
+                const fontSize = 12 / globalScale;
+                ctx.font = `${fontSize}px Inter, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                ctx.fillStyle = highlightNodes.has(node) ? '#ffffff' : node.color;
+                ctx.fillText(label, node.x, node.y + size + (15 / globalScale));
+            }
+        })
+
+        .linkColor(link => highlightLinks.has(link) ? 'rgba(255, 255, 255, 0.5)' : 'rgba(255, 255, 255, 0.05)')
+        .linkWidth(link => highlightLinks.has(link) ? 2 : 1)
+        .linkDirectionalParticles(link => highlightLinks.has(link) ? 3 : 0)
+        .linkDirectionalParticleWidth(3)
+        .linkDirectionalParticleColor(link => link.source.color || '#ffffff')
+        .linkDirectionalParticleSpeed(0.01)
+
+        // --- INTERACTIONS UTILISATEUR ---
+        .onNodeHover(node => {
+            highlightNodes.clear();
+            highlightLinks.clear();
+
+            if (node) {
+                highlightNodes.add(node);
+                // On illumine les liens connectés et les voisins
+                graphData.links.forEach(link => {
+                    if (link.source.id === node.id || link.target.id === node.id) {
+                        highlightLinks.add(link);
+                        highlightNodes.add(link.source);
+                        highlightNodes.add(link.target);
+                    }
+                });
+            }
+
+            hoverNode = node || null;
+            container.style.cursor = node ? 'pointer' : null;
+            onNodeHover(node, !!node);
+
+            // On force le graphe à redessiner les liens
+            graph.linkWidth(graph.linkWidth()).linkDirectionalParticles(graph.linkDirectionalParticles());
+        })
+        .onNodeClick(node => {
+            // Mouvement de caméra vers le nœud cliqué
+            graph.centerAt(node.x, node.y, 1000);
+            graph.zoom(3, 1500); // Zoom x3
+            onNodeClick(node);
+        })
+        .onBackgroundClick(() => {
             onNodeClick(null);
-        }
+            graph.zoomToFit(1000);
+        });
+
+    // --- LA PHYSIQUE VIVANTE ---
+    // Répulsion forte pour bien écarter les avatars (augmentée car les nœuds sont plus gros)
+    graph.d3Force('charge').strength(-550);
+    // Éloigne les nœuds du centre pour que l'étoile respire (augmentée pour la clarté)
+    graph.d3Force('link').distance(180);
+    // Force douce vers le centre pour éviter que le graphe n'explose à l'infini
+    graph.d3Force('center').strength(0.04);
+
+    window.addEventListener('resize', () => {
+        graph.width(container.clientWidth);
+        graph.height(container.clientHeight);
     });
 
-    return cy;
+    return graph;
 }
 
 /**
- * Filtre visuellement les nœuds du graphe en fonction du domaine sélectionné.
- * @function filterGraph
- * @param {string} field - Le domaine à isoler ou "all" pour tout afficher.
+ * Filtre visuellement les nœuds sans les supprimer (beaucoup plus performant).
  */
 export function filterGraph(field) {
-    if (!cy) return;
-    cy.batch(() => {
-        if (field === 'all') {
-            cy.elements().style('display', 'element');
-        } else {
-            cy.elements().style('display', 'none');
-            const filtered = cy.nodes().filter(n => n.data('field') === field || n.id() === 'core');
-            filtered.style('display', 'element');
-            filtered.connectedEdges().style('display', 'element');
-        }
-        cy.layout({ name: 'cose', animate: true, animationDuration: 500 }).run();
+    if (!graph) return;
+
+    // On cache simplement les nœuds qui ne correspondent pas
+    graph.nodeVisibility(node => {
+        if (field === 'all') return true;
+        return node.field === field || node.id === 'core';
+    });
+
+    // Pareil pour les liens
+    graph.linkVisibility(link => {
+        if (field === 'all') return true;
+        return link.source.field === field || link.target.field === field || link.source.id === 'core';
     });
 }

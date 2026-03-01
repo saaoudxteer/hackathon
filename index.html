@@ -3,75 +3,69 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Open-Source Project Dashboard</title>
+  <title>AMU Graph - L'Œuvre Collective</title>
   <link rel="stylesheet" href="/src/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@400;600&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 
+
+
 <body>
-  <!-- Fixed background graphic -->
-  <div class="bg-grid"></div>
 
-  <!-- Main Dashboard Layout -->
-  <div class="dashboard">
+  <button id="info-bubble" class="info-bubble glass">?</button>
 
-    <!-- Top Bar -->
-    <header class="top-bar glass-panel">
-      <div class="logo">
-        <span class="neon-text">SYS.</span>CORE
-      </div>
-      <div class="actions">
-        <select id="domain-filter" class="cyber-select">
-          <option value="all">Tous les domaines</option>
-        </select>
-        <button id="add-node-btn" class="cyber-button">Ajouter un nœud</button>
-      </div>
-    </header>
-
-    <div class="dashboard-body">
-      <!-- Center: Graph Area (Full Screen) -->
-      <main class="center-stage">
-        <div id="cy"></div>
-
-        <!-- Node Details Panel -->
-        <div id="details-panel" class="details-panel glass-panel hidden">
-          <div class="details-header">
-            <h3 id="detail-name">Nom de la feature</h3>
-            <button id="close-details" class="close-btn">&times;</button>
-          </div>
-          <p id="detail-desc" class="desc">Description...</p>
-          <div class="detail-meta">
-            <span class="domain-badge" id="detail-domain">Domaine</span>
-          </div>
-          <div class="contributors-list" id="detail-contributors">
-            <!-- Contributors injected here -->
-          </div>
-        </div>
-      </main>
+  <div id="info-panel" class="info-panel glass hidden">
+    <div class="panel-header">
+      <h2>À propos de l'Œuvre</h2>
+      <button id="close-info" class="close-icon">&times;</button>
     </div>
-  </div>
+    <div class="panel-content">
+      <p>Bienvenue sur la constellation de l'AMU Hackathon-2026. Chaque point lumineux de ce réseau représente la
+        contribution d'un étudiant ou d'une équipe à un projet commun.</p>
 
-  <!-- First Visit Modal -->
-  <div id="welcome-modal" class="modal-overlay hidden">
-    <div class="modal-content glass-panel">
-      <h2>Bienvenue sur le Projet</h2>
-      <p>Ce graphe interactif représente toutes les contributions à notre projet open-source universitaire.</p>
+      <h3>Comment participer ?</h3>
       <ul>
-        <li>Chaque nœud est une fonctionnalité ou un composant.</li>
-        <li>Survolez les nœuds pour voir les connexions.</li>
-        <li>Cliquez pour afficher les détails et les contributeurs.</li>
+        <li>Forker le dépôt <code>Slaytt/Hackathon-2026</code>.</li>
+        <li>Créer une branche et ajouter votre projet dans le dossier <code>noeud</code> du dépôt principal.</li>
+        <li>Ajouter les informations de votre projet dans le fichier <code>registry.json</code> en respectant le format.
+        </li>
+        <li>Choisissez votre propre couleur via le champ <code>"color": "#HEX"</code>.</li>
+        <li>Nous reviewerons votre projet avant de le merger.</li>
       </ul>
-      <p>Vous voulez participer ? Cliquez sur le bouton "Ajouter un nœud" en haut !</p>
-      <button id="start-btn" class="cyber-button primary">Commencer l'exploration</button>
+      <p><em>Le graphe se mettra à jour automatiquement !</em></p>
     </div>
   </div>
 
-  <!-- Toast Container -->
-  <div id="toast-container" class="toast-container"></div>
+  <div id="cy"></div>
 
+  <header class="floating-header glass">
+    <div class="logo">AstrAMU <span class="logo-dim"></span></div>
+    <div class="controls">
+      <select id="domain-filter" class="clean-select">
+        <option value="all">Tous les projets</option>
+      </select>
+      <button id="add-node-btn" class="clean-button">Ajouter un projet</button>
+    </div>
+  </header>
+
+  <div id="focus-card" class="focus-card glass hidden">
+    <div class="card-header">
+      <div class="card-domain" id="detail-domain">Domaine</div>
+      <button id="close-details" class="close-icon">&times;</button>
+    </div>
+    <h3 id="detail-name">Nom du Nœud</h3>
+    <p id="detail-desc" class="desc">Description du projet...</p>
+    <p class="desc" style="color: #4db8ff; font-weight: bold;">
+      Lignes codées : <span id="detail-loc">0</span>
+    </p>
+    <div class="divider"></div>
+    <p class="subtitle">Contributeurs</p>
+    <div class="contributors-list" id="detail-contributors">
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
   <script type="module" src="/src/main.js"></script>
 </body>
 
