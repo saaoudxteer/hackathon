@@ -36,14 +36,19 @@ function populateDomainFilter(features) {
  * @function checkFirstVisit
  */
 function checkFirstVisit() {
+    const modal = document.getElementById('welcome-modal');
+    if (!modal) return;
+
     if (!document.cookie.includes('first_visit=true')) {
-        const modal = document.getElementById('welcome-modal');
         modal.classList.remove('hidden');
 
-        document.getElementById('start-btn').addEventListener('click', () => {
-            document.cookie = "first_visit=true; max-age=31536000; path=/";
-            modal.classList.add('hidden');
-        });
+        const btn = document.getElementById('start-btn');
+        if (btn) {
+            btn.addEventListener('click', () => {
+                document.cookie = "first_visit=true; max-age=31536000; path=/";
+                modal.classList.add('hidden');
+            });
+        }
     }
 }
 

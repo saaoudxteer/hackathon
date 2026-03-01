@@ -47,11 +47,10 @@ export function initGraph(container, graphData, onNodeClick, onNodeHover) {
 
         .nodeCanvasObject((node, ctx, globalScale) => {
 
-            let size = 12; // Base légèrement plus grande
+            let size = 12;
             if (node.id === 'core') {
-                size = 45; // Max central réduit
+                size = 45;
             } else if (node.loc > 0) {
-                // Racine carrée avec un diviseur plus élevé pour lisser l'échelle (delta moins violent)
                 size = Math.min(12 + Math.sqrt(node.loc) / 4, 35);
             }
 

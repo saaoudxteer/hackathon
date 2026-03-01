@@ -11,19 +11,30 @@ export async function fetchFeatures() {
         if (!response.ok) throw new Error("Erreur JSON");
         const registryData = await response.json();
 
-        // 2. On récupère les stats de lignes de code
         let linesOfCodeData = {};
         try {
-            const statsResponse = await fetch(STATS_URL);
-            // GitHub peut renvoyer 202 si les stats sont en cours de calcul
-            if (statsResponse.status === 200) {
-                const statsData = await statsResponse.json();
-                statsData.forEach(stat => {
-                    if (stat.author && stat.author.login) {
-                        const totalAdditions = stat.weeks.reduce((sum, week) => sum + week.a, 0);
-                        linesOfCodeData[stat.author.login.toLowerCase()] = totalAdditions;
-                    }
-                });
+            const cacheKey = 'github_stats_cache';
+            const cachedTime = sessionStorage.getItem(`${cacheKey}_time`);
+            const cachedData = sessionStorage.getItem(cacheKey);
+
+            if (cachedData && cachedTime && (Date.now() - parseInt(cachedTime) < 10 * 60 * 1000)) {
+                linesOfCodeData = JSON.parse(cachedData);
+            } else {
+                const statsResponse = await fetch(STATS_URL);
+                if (statsResponse.status === 200) {
+                    const statsData = await statsResponse.json();
+                    statsData.forEach(stat => {
+                        if (stat.author && stat.author.login) {
+                            const totalAdditions = stat.weeks.reduce((sum, week) => sum + week.a, 0);
+                            linesOfCodeData[stat.author.login.toLowerCase()] = totalAdditions;
+                        }
+                    });
+                    sessionStorage.setItem(cacheKey, JSON.stringify(linesOfCodeData));
+                    sessionStorage.setItem(`${cacheKey}_time`, Date.now().toString());
+                } else if (statsResponse.status === 403) {
+                    console.warn("API GitHub: Limite de requêtes atteinte (60/heure pour IP non authentifiée).");
+                    if (cachedData) linesOfCodeData = JSON.parse(cachedData); // Fallback old cache
+                }
             }
         } catch (e) {
             console.warn("Impossible de récupérer les stats Github, tailles par défaut appliquées.");
